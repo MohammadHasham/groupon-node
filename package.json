@@ -1,0 +1,29 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "setupTestFrameworkScriptFile": "./tests/setup.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^2.0.1",
+    "body-parser": "^1.18.2",
+    "cookie-session": "^2.0.0-beta.3",
+    "express": "^4.16.3",
+    "jest": "^22.4.4",
+    "keygrip": "^1.0.2",
+    "mongoose": "^5.0.17",
+    "passport": "^0.4.0",
+    "passport-facebook": "^2.1.1",
+    "passport-google-oauth20": "^1.0.0",
+    "passport-local": "^1.0.0",
+    "puppeteer": "^1.4.0",
+    "socket.io": "^2.1.0"
+  }
+}
