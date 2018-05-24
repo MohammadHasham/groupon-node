@@ -4,6 +4,8 @@ const User = mongoose.model("User");
 const Posts = mongoose.model("Posts");
 const Comments = mongoose.model("Comments");
 const Friends = mongoose.model("Friends");
+const cleanCache = require("../middlewares/cleanCache");
+const {clearHash} = require("../services/cache");
 let users = [];
 let onlineUsers = [];
 let privateUsers = [];
@@ -21,31 +23,36 @@ module.exports = (app,io) => {
     const user =await User.findOneAndUpdate({_id:req.user.id},{$push:{"groups":result._id}})
     res.send(result);
   });
-  app.post('/api/filter',async (req,res)=>{
-    const data = await Group.find({interest:req.body.interest});
+  app.post('/api/filter',cleanCache,async (req,res)=>{
+    if(!req.body.interest){
+        const data = await Group.find({}).cache({key:req.user.id}).cache({key:req.user.id});
+        res.send(data);
+        return;
+    }
+    const data = await Group.find({interest:req.body.interest}).cache({key:req.user.id});
     res.send(data);
   });
-  app.post("/api/getgroups", async (req, res) => {
-    const groups = await Group.find({_id:req.body.id}).populate('users').populate('posts').exec();
+  app.post("/api/getgroups", cleanCache,async (req, res) => {
+    const groups = await Group.find({_id:req.body.id}).populate('users').populate('posts').cache({key:req.user.id}).exec();
     res.send(groups);
   });
-  app.get("/api/getuser",async (req,res)=>{
-    const user = await User.find({_id:req.user.id}).populate({path:'friends',populate:{path:'name',model:'User'}}).populate('groups').exec();
+  app.get("/api/getuser",cleanCache,async (req,res)=>{
+    const user = await User.find({_id:req.user.id}).populate({path:'friends',populate:{path:'name',model:'User'}}).populate('groups').cache({key:req.user.id}).exec();
     res.send(user);
   });
   app.post("/api/getuser",async (req,res)=>{
     const user = await User.find({_id:req.body.id}).populate({path:'friends',populate:{path:'name',model:'User'}}).populate('groups').exec();
     res.send(user);
   });
-  app.post("/api/getprofile",async (req,res)=>{
-    const user = await User.find({_id:req.body.id}).populate('groups').exec();
+  app.post("/api/getprofile",cleanCache,async (req,res)=>{
+    const user = await User.find({_id:req.body.id}).populate('groups').cache({key:req.user.id}).exec();
     res.send(user);
   });
-  app.post("/api/filter/query", async (req, res) => {
+  app.post("/api/filter/query",cleanCache, async (req, res) => {
     //query shall be replaced with actual query when doing frontned.
     const groups = await Group.find({
       name: { $regex: req.body.name, $options: "i" }
-    });
+    }).cache({key:req.user.id});
     res.send(groups);
   });
 
@@ -67,8 +74,8 @@ module.exports = (app,io) => {
     const group = await Group.findOneAndUpdate({_id:req.user.id},{$push:{"posts":result._id}});
     res.send(result);
   });
-  app.post('/api/getposts',async (req,res)=>{
-    const Post = await Group.find({_id:req.body.id}).populate('posts').exec();
+  app.post('/api/getposts',cleanCache,async (req,res)=>{
+    const Post = await Group.find({_id:req.body.id}).populate('posts').cache({key:req.user.id}).exec();
     res.send(Post);
   });
 
@@ -90,8 +97,8 @@ module.exports = (app,io) => {
     const comment = await Posts.findOneAndUpdate({_id:req.body.id},{$push:{"comments":cmt._id}},{new:true});
     res.send(cmt);
   });
-  app.post('/api/getcomments',async (req,res)=>{
-    const result = await Posts.find({_id:req.body.id}).populate('comments');
+  app.post('/api/getcomments',cleanCache,async (req,res)=>{
+    const result = await Posts.find({_id:req.body.id}).populate('comments').cache({key:req.user.id});
     res.send(result);
   });
   app.post('/api/delete/post',async (req,res)=>{
@@ -133,7 +140,7 @@ module.exports = (app,io) => {
     const accepter = await User.findOneAndUpdate({_id:id},{$push:{"friends":anotherResult._id}},{upsert:true,new:true});
     res.send(updatedUser);
   });
-  app.get('/api/getgroups',async (req,res)=>{
+  app.get('/api/getgroups',cleanCache,async (req,res)=>{
     const groups = await Group.find({}).populate('users').populate('posts').exec();
     res.send(groups);
   });
