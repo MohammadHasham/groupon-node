@@ -12,7 +12,7 @@ class Groups extends Component{
 
   }
   renderGroups = ()=>{
-    return this.props.groups.map((item)=>{
+    return [...this.props.groups].map((item)=>{
       return (<div className="col-md-4 m-1  card" >
         <div className="card-body" style={{margin:"1% 0% 0% 1%"}}>
           <h5 className="card-title">{item.name}</h5>

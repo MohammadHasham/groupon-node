@@ -51,8 +51,8 @@ module.exports = (app,io) => {
   app.post("/api/filter/query",cleanCache, async (req, res) => {
     //query shall be replaced with actual query when doing frontned.
     const groups = await Group.find({
-      name: { $regex: req.body.name, $options: "i" }
-    }).cache({key:req.user.id});
+      'name' : new RegExp(req.body.name, 'i')
+    }).cache({key:req.user.id})
     res.send(groups);
   });
 
